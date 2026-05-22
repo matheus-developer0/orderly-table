@@ -1,0 +1,25 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { HandPlatter } from "lucide-react";
+
+export const Route = createFileRoute("/_authenticated/garcom")({
+  component: GarcomPage,
+});
+
+function GarcomPage() {
+  return (
+    <div className="grid min-h-[60vh] place-items-center p-10">
+      <div className="max-w-md text-center">
+        <div className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-accent/40">
+          <HandPlatter className="h-7 w-7 text-accent-foreground" />
+        </div>
+        <h1 className="mt-6 text-2xl font-extrabold tracking-tight">
+          Painel do Garçom
+        </h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Chamadas de mesa em tempo real, fechamento de conta com divisão por
+          subpedido e pagamento individual. Disponível na Fase 3.
+        </p>
+      </div>
+    </div>
+  );
+}

@@ -9,38 +9,204 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SignupRouteImport } from './routes/signup'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as MesaTableIdRouteImport } from './routes/mesa.$tableId'
+import { Route as AuthenticatedGarcomRouteImport } from './routes/_authenticated/garcom'
+import { Route as AuthenticatedCozinhaRouteImport } from './routes/_authenticated/cozinha'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedAdminProdutosRouteImport } from './routes/_authenticated/admin.produtos'
+import { Route as AuthenticatedAdminMesasRouteImport } from './routes/_authenticated/admin.mesas'
+import { Route as AuthenticatedAdminEquipeRouteImport } from './routes/_authenticated/admin.equipe'
 
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRoute = AuthenticatedRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MesaTableIdRoute = MesaTableIdRouteImport.update({
+  id: '/mesa/$tableId',
+  path: '/mesa/$tableId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedGarcomRoute = AuthenticatedGarcomRouteImport.update({
+  id: '/garcom',
+  path: '/garcom',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedCozinhaRoute = AuthenticatedCozinhaRouteImport.update({
+  id: '/cozinha',
+  path: '/cozinha',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAdminProdutosRoute =
+  AuthenticatedAdminProdutosRouteImport.update({
+    id: '/produtos',
+    path: '/produtos',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
+const AuthenticatedAdminMesasRoute = AuthenticatedAdminMesasRouteImport.update({
+  id: '/mesas',
+  path: '/mesas',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
+const AuthenticatedAdminEquipeRoute =
+  AuthenticatedAdminEquipeRouteImport.update({
+    id: '/equipe',
+    path: '/equipe',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
+  '/signup': typeof SignupRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/cozinha': typeof AuthenticatedCozinhaRoute
+  '/garcom': typeof AuthenticatedGarcomRoute
+  '/mesa/$tableId': typeof MesaTableIdRoute
+  '/admin/equipe': typeof AuthenticatedAdminEquipeRoute
+  '/admin/mesas': typeof AuthenticatedAdminMesasRoute
+  '/admin/produtos': typeof AuthenticatedAdminProdutosRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
+  '/signup': typeof SignupRoute
+  '/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/cozinha': typeof AuthenticatedCozinhaRoute
+  '/garcom': typeof AuthenticatedGarcomRoute
+  '/mesa/$tableId': typeof MesaTableIdRoute
+  '/admin/equipe': typeof AuthenticatedAdminEquipeRoute
+  '/admin/mesas': typeof AuthenticatedAdminMesasRoute
+  '/admin/produtos': typeof AuthenticatedAdminProdutosRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
+  '/signup': typeof SignupRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/_authenticated/cozinha': typeof AuthenticatedCozinhaRoute
+  '/_authenticated/garcom': typeof AuthenticatedGarcomRoute
+  '/mesa/$tableId': typeof MesaTableIdRoute
+  '/_authenticated/admin/equipe': typeof AuthenticatedAdminEquipeRoute
+  '/_authenticated/admin/mesas': typeof AuthenticatedAdminMesasRoute
+  '/_authenticated/admin/produtos': typeof AuthenticatedAdminProdutosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/onboarding'
+    | '/signup'
+    | '/admin'
+    | '/cozinha'
+    | '/garcom'
+    | '/mesa/$tableId'
+    | '/admin/equipe'
+    | '/admin/mesas'
+    | '/admin/produtos'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/login'
+    | '/onboarding'
+    | '/signup'
+    | '/admin'
+    | '/cozinha'
+    | '/garcom'
+    | '/mesa/$tableId'
+    | '/admin/equipe'
+    | '/admin/mesas'
+    | '/admin/produtos'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/login'
+    | '/onboarding'
+    | '/signup'
+    | '/_authenticated/admin'
+    | '/_authenticated/cozinha'
+    | '/_authenticated/garcom'
+    | '/mesa/$tableId'
+    | '/_authenticated/admin/equipe'
+    | '/_authenticated/admin/mesas'
+    | '/_authenticated/admin/produtos'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  LoginRoute: typeof LoginRoute
+  OnboardingRoute: typeof OnboardingRoute
+  SignupRoute: typeof SignupRoute
+  MesaTableIdRoute: typeof MesaTableIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,22 +214,97 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/mesa/$tableId': {
+      id: '/mesa/$tableId'
+      path: '/mesa/$tableId'
+      fullPath: '/mesa/$tableId'
+      preLoaderRoute: typeof MesaTableIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/garcom': {
+      id: '/_authenticated/garcom'
+      path: '/garcom'
+      fullPath: '/garcom'
+      preLoaderRoute: typeof AuthenticatedGarcomRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/cozinha': {
+      id: '/_authenticated/cozinha'
+      path: '/cozinha'
+      fullPath: '/cozinha'
+      preLoaderRoute: typeof AuthenticatedCozinhaRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/admin/produtos': {
+      id: '/_authenticated/admin/produtos'
+      path: '/produtos'
+      fullPath: '/admin/produtos'
+      preLoaderRoute: typeof AuthenticatedAdminProdutosRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/mesas': {
+      id: '/_authenticated/admin/mesas'
+      path: '/mesas'
+      fullPath: '/admin/mesas'
+      preLoaderRoute: typeof AuthenticatedAdminMesasRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
+    '/_authenticated/admin/equipe': {
+      id: '/_authenticated/admin/equipe'
+      path: '/equipe'
+      fullPath: '/admin/equipe'
+      preLoaderRoute: typeof AuthenticatedAdminEquipeRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
   }
 }
 
+interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminEquipeRoute: typeof AuthenticatedAdminEquipeRoute
+  AuthenticatedAdminMesasRoute: typeof AuthenticatedAdminMesasRoute
+  AuthenticatedAdminProdutosRoute: typeof AuthenticatedAdminProdutosRoute
+}
+
+const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminEquipeRoute: AuthenticatedAdminEquipeRoute,
+  AuthenticatedAdminMesasRoute: AuthenticatedAdminMesasRoute,
+  AuthenticatedAdminProdutosRoute: AuthenticatedAdminProdutosRoute,
+}
+
+const AuthenticatedAdminRouteWithChildren =
+  AuthenticatedAdminRoute._addFileChildren(AuthenticatedAdminRouteChildren)
+
+interface AuthenticatedRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
+  AuthenticatedCozinhaRoute: typeof AuthenticatedCozinhaRoute
+  AuthenticatedGarcomRoute: typeof AuthenticatedGarcomRoute
+}
+
+const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
+  AuthenticatedCozinhaRoute: AuthenticatedCozinhaRoute,
+  AuthenticatedGarcomRoute: AuthenticatedGarcomRoute,
+}
+
+const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
+  AuthenticatedRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  LoginRoute: LoginRoute,
+  OnboardingRoute: OnboardingRoute,
+  SignupRoute: SignupRoute,
+  MesaTableIdRoute: MesaTableIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
