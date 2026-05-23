@@ -12,6 +12,8 @@ import {
   Search,
   X,
   CheckCircle2,
+  Bell,
+  MessageCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -128,6 +130,19 @@ function MesaPage() {
     setSending(false);
   };
 
+  const callWaiter = async () => {
+    if (!restaurant || !table) return;
+    const { error } = await supabase.from("waiter_calls").insert({
+      restaurant_id: restaurant.id,
+      table_id: table.id,
+      reason: "call",
+    });
+    if (error) toast.error("Erro ao chamar o garçom.");
+    else toast.success("Garçom a caminho! 🛎️", { duration: 2500 });
+  };
+
+
+
   const filtered = products.filter((p) => {
     const matchSearch = !search || p.name.toLowerCase().includes(search.toLowerCase());
     const matchCat = !activeCategory || p.category_id === activeCategory;
@@ -197,6 +212,23 @@ function MesaPage() {
             Mesa {table.number}
           </div>
           <h1 className="mt-1 text-3xl font-black tracking-tight">{restaurant.name}</h1>
+
+          <div className="mt-4 flex gap-2">
+            <button
+              onClick={() => void callWaiter()}
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-white/15 backdrop-blur px-3 py-2 text-xs font-bold hover:bg-white/25 transition-colors"
+            >
+              <Bell className="h-3.5 w-3.5" /> Chamar garçom
+            </button>
+            <a
+              href={`https://wa.me/?text=${encodeURIComponent(`Olá ${restaurant.name}, estou na mesa ${table.number}.`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-white/15 backdrop-blur px-3 py-2 text-xs font-bold hover:bg-white/25 transition-colors"
+            >
+              <MessageCircle className="h-3.5 w-3.5" /> WhatsApp
+            </a>
+          </div>
         </div>
       </div>
 

@@ -2,7 +2,8 @@ import { createFileRoute, Outlet, useNavigate, Link, useLocation } from "@tansta
 import { useEffect, useState, useCallback } from "react";
 import {
   LayoutDashboard, Pizza, QrCode, Users, LogOut, Loader2,
-  ChefHat, HandPlatter, Bell, Menu, X,
+  ChefHat, HandPlatter, Bell, Menu,
+  Receipt, Wallet, BarChart3, Bike, Sparkles, Settings,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { BrandLogo } from "@/components/brand-logo";
@@ -82,12 +83,18 @@ function AuthenticatedLayout() {
   }
 
   const NAV: NavItem[] = [
-    { to: "/admin",          label: "Dashboard",  icon: LayoutDashboard },
-    { to: "/admin/produtos", label: "Cardápio",   icon: Pizza },
-    { to: "/admin/mesas",    label: "Mesas",      icon: QrCode },
-    { to: "/cozinha",        label: "Cozinha",    icon: ChefHat,     badge: newOrders > 0 ? newOrders : undefined },
-    { to: "/garcom",         label: "Garçom",     icon: HandPlatter, badge: waiterCalls > 0 ? waiterCalls : undefined },
-    { to: "/admin/equipe",   label: "Equipe",     icon: Users },
+    { to: "/admin",                label: "Dashboard",    icon: LayoutDashboard },
+    { to: "/cozinha",              label: "Cozinha",      icon: ChefHat,     badge: newOrders > 0 ? newOrders : undefined },
+    { to: "/garcom",               label: "Garçom",       icon: HandPlatter, badge: waiterCalls > 0 ? waiterCalls : undefined },
+    { to: "/admin/pedidos",        label: "Pedidos",      icon: Receipt },
+    { to: "/admin/delivery",       label: "Delivery",     icon: Bike },
+    { to: "/admin/caixa",          label: "Caixa",        icon: Wallet },
+    { to: "/admin/relatorios",     label: "Relatórios",   icon: BarChart3 },
+    { to: "/admin/produtos",       label: "Cardápio",     icon: Pizza },
+    { to: "/admin/promocoes",      label: "Promoções",    icon: Sparkles },
+    { to: "/admin/mesas",          label: "Mesas & QR",   icon: QrCode },
+    { to: "/admin/equipe",         label: "Equipe",       icon: Users },
+    { to: "/admin/configuracoes",  label: "Configurações",icon: Settings },
   ];
 
   const SidebarContent = () => (
@@ -208,9 +215,9 @@ function AuthenticatedLayout() {
           <Outlet />
         </main>
 
-        {/* Mobile bottom nav */}
-        <nav className="grid grid-cols-6 border-t border-border bg-card lg:hidden">
-          {NAV.map((item) => {
+        {/* Mobile bottom nav — show top 5 quick-access */}
+        <nav className="grid grid-cols-5 border-t border-border bg-card lg:hidden">
+          {NAV.slice(0, 5).map((item) => {
             const Icon = item.icon;
             const active = location.pathname === item.to;
             return (
@@ -236,6 +243,3 @@ function AuthenticatedLayout() {
     </div>
   );
 }
-
-// silence unused import warning  
-void X;
