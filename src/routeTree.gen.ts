@@ -23,6 +23,7 @@ import { Route as AuthenticatedAdminProdutosRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminPedidosRouteImport } from './routes/_authenticated/admin.pedidos'
 import { Route as AuthenticatedAdminMesasRouteImport } from './routes/_authenticated/admin.mesas'
 import { Route as AuthenticatedAdminEquipeRouteImport } from './routes/_authenticated/admin.equipe'
+import { Route as AuthenticatedAdminDeliveryRouteImport } from './routes/_authenticated/admin.delivery'
 import { Route as AuthenticatedAdminCaixaRouteImport } from './routes/_authenticated/admin.caixa'
 
 const SignupRoute = SignupRouteImport.update({
@@ -98,6 +99,12 @@ const AuthenticatedAdminEquipeRoute =
     path: '/equipe',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminDeliveryRoute =
+  AuthenticatedAdminDeliveryRouteImport.update({
+    id: '/delivery',
+    path: '/delivery',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminCaixaRoute = AuthenticatedAdminCaixaRouteImport.update({
   id: '/caixa',
   path: '/caixa',
@@ -114,6 +121,7 @@ export interface FileRoutesByFullPath {
   '/garcom': typeof AuthenticatedGarcomRoute
   '/mesa/$tableId': typeof MesaTableIdRoute
   '/admin/caixa': typeof AuthenticatedAdminCaixaRoute
+  '/admin/delivery': typeof AuthenticatedAdminDeliveryRoute
   '/admin/equipe': typeof AuthenticatedAdminEquipeRoute
   '/admin/mesas': typeof AuthenticatedAdminMesasRoute
   '/admin/pedidos': typeof AuthenticatedAdminPedidosRoute
@@ -130,6 +138,7 @@ export interface FileRoutesByTo {
   '/garcom': typeof AuthenticatedGarcomRoute
   '/mesa/$tableId': typeof MesaTableIdRoute
   '/admin/caixa': typeof AuthenticatedAdminCaixaRoute
+  '/admin/delivery': typeof AuthenticatedAdminDeliveryRoute
   '/admin/equipe': typeof AuthenticatedAdminEquipeRoute
   '/admin/mesas': typeof AuthenticatedAdminMesasRoute
   '/admin/pedidos': typeof AuthenticatedAdminPedidosRoute
@@ -148,6 +157,7 @@ export interface FileRoutesById {
   '/_authenticated/garcom': typeof AuthenticatedGarcomRoute
   '/mesa/$tableId': typeof MesaTableIdRoute
   '/_authenticated/admin/caixa': typeof AuthenticatedAdminCaixaRoute
+  '/_authenticated/admin/delivery': typeof AuthenticatedAdminDeliveryRoute
   '/_authenticated/admin/equipe': typeof AuthenticatedAdminEquipeRoute
   '/_authenticated/admin/mesas': typeof AuthenticatedAdminMesasRoute
   '/_authenticated/admin/pedidos': typeof AuthenticatedAdminPedidosRoute
@@ -166,6 +176,7 @@ export interface FileRouteTypes {
     | '/garcom'
     | '/mesa/$tableId'
     | '/admin/caixa'
+    | '/admin/delivery'
     | '/admin/equipe'
     | '/admin/mesas'
     | '/admin/pedidos'
@@ -182,6 +193,7 @@ export interface FileRouteTypes {
     | '/garcom'
     | '/mesa/$tableId'
     | '/admin/caixa'
+    | '/admin/delivery'
     | '/admin/equipe'
     | '/admin/mesas'
     | '/admin/pedidos'
@@ -199,6 +211,7 @@ export interface FileRouteTypes {
     | '/_authenticated/garcom'
     | '/mesa/$tableId'
     | '/_authenticated/admin/caixa'
+    | '/_authenticated/admin/delivery'
     | '/_authenticated/admin/equipe'
     | '/_authenticated/admin/mesas'
     | '/_authenticated/admin/pedidos'
@@ -315,6 +328,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminEquipeRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/delivery': {
+      id: '/_authenticated/admin/delivery'
+      path: '/delivery'
+      fullPath: '/admin/delivery'
+      preLoaderRoute: typeof AuthenticatedAdminDeliveryRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/caixa': {
       id: '/_authenticated/admin/caixa'
       path: '/caixa'
@@ -327,6 +347,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminCaixaRoute: typeof AuthenticatedAdminCaixaRoute
+  AuthenticatedAdminDeliveryRoute: typeof AuthenticatedAdminDeliveryRoute
   AuthenticatedAdminEquipeRoute: typeof AuthenticatedAdminEquipeRoute
   AuthenticatedAdminMesasRoute: typeof AuthenticatedAdminMesasRoute
   AuthenticatedAdminPedidosRoute: typeof AuthenticatedAdminPedidosRoute
@@ -336,6 +357,7 @@ interface AuthenticatedAdminRouteChildren {
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminCaixaRoute: AuthenticatedAdminCaixaRoute,
+  AuthenticatedAdminDeliveryRoute: AuthenticatedAdminDeliveryRoute,
   AuthenticatedAdminEquipeRoute: AuthenticatedAdminEquipeRoute,
   AuthenticatedAdminMesasRoute: AuthenticatedAdminMesasRoute,
   AuthenticatedAdminPedidosRoute: AuthenticatedAdminPedidosRoute,
