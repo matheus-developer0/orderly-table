@@ -2,7 +2,8 @@ import { createFileRoute, Outlet, useNavigate, Link, useLocation } from "@tansta
 import { useEffect, useState, useCallback } from "react";
 import {
   LayoutDashboard, Pizza, QrCode, Users, LogOut, Loader2,
-  ChefHat, HandPlatter, Bell, Menu, X,
+  ChefHat, HandPlatter, Bell, Menu,
+  Receipt, Wallet, BarChart3, Bike, Sparkles, Settings,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { BrandLogo } from "@/components/brand-logo";
