@@ -215,9 +215,9 @@ function AuthenticatedLayout() {
           <Outlet />
         </main>
 
-        {/* Mobile bottom nav */}
-        <nav className="grid grid-cols-6 border-t border-border bg-card lg:hidden">
-          {NAV.map((item) => {
+        {/* Mobile bottom nav — show top 5 quick-access */}
+        <nav className="grid grid-cols-5 border-t border-border bg-card lg:hidden">
+          {NAV.slice(0, 5).map((item) => {
             const Icon = item.icon;
             const active = location.pathname === item.to;
             return (
