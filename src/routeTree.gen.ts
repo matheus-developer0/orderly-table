@@ -19,8 +19,10 @@ import { Route as AuthenticatedGarcomRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedCozinhaRouteImport } from './routes/_authenticated/cozinha'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAdminProdutosRouteImport } from './routes/_authenticated/admin.produtos'
+import { Route as AuthenticatedAdminPedidosRouteImport } from './routes/_authenticated/admin.pedidos'
 import { Route as AuthenticatedAdminMesasRouteImport } from './routes/_authenticated/admin.mesas'
 import { Route as AuthenticatedAdminEquipeRouteImport } from './routes/_authenticated/admin.equipe'
+import { Route as AuthenticatedAdminCaixaRouteImport } from './routes/_authenticated/admin.caixa'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
@@ -72,6 +74,12 @@ const AuthenticatedAdminProdutosRoute =
     path: '/produtos',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminPedidosRoute =
+  AuthenticatedAdminPedidosRouteImport.update({
+    id: '/pedidos',
+    path: '/pedidos',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminMesasRoute = AuthenticatedAdminMesasRouteImport.update({
   id: '/mesas',
   path: '/mesas',
@@ -83,6 +91,11 @@ const AuthenticatedAdminEquipeRoute =
     path: '/equipe',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminCaixaRoute = AuthenticatedAdminCaixaRouteImport.update({
+  id: '/caixa',
+  path: '/caixa',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -93,8 +106,10 @@ export interface FileRoutesByFullPath {
   '/cozinha': typeof AuthenticatedCozinhaRoute
   '/garcom': typeof AuthenticatedGarcomRoute
   '/mesa/$tableId': typeof MesaTableIdRoute
+  '/admin/caixa': typeof AuthenticatedAdminCaixaRoute
   '/admin/equipe': typeof AuthenticatedAdminEquipeRoute
   '/admin/mesas': typeof AuthenticatedAdminMesasRoute
+  '/admin/pedidos': typeof AuthenticatedAdminPedidosRoute
   '/admin/produtos': typeof AuthenticatedAdminProdutosRoute
 }
 export interface FileRoutesByTo {
@@ -106,8 +121,10 @@ export interface FileRoutesByTo {
   '/cozinha': typeof AuthenticatedCozinhaRoute
   '/garcom': typeof AuthenticatedGarcomRoute
   '/mesa/$tableId': typeof MesaTableIdRoute
+  '/admin/caixa': typeof AuthenticatedAdminCaixaRoute
   '/admin/equipe': typeof AuthenticatedAdminEquipeRoute
   '/admin/mesas': typeof AuthenticatedAdminMesasRoute
+  '/admin/pedidos': typeof AuthenticatedAdminPedidosRoute
   '/admin/produtos': typeof AuthenticatedAdminProdutosRoute
 }
 export interface FileRoutesById {
@@ -121,8 +138,10 @@ export interface FileRoutesById {
   '/_authenticated/cozinha': typeof AuthenticatedCozinhaRoute
   '/_authenticated/garcom': typeof AuthenticatedGarcomRoute
   '/mesa/$tableId': typeof MesaTableIdRoute
+  '/_authenticated/admin/caixa': typeof AuthenticatedAdminCaixaRoute
   '/_authenticated/admin/equipe': typeof AuthenticatedAdminEquipeRoute
   '/_authenticated/admin/mesas': typeof AuthenticatedAdminMesasRoute
+  '/_authenticated/admin/pedidos': typeof AuthenticatedAdminPedidosRoute
   '/_authenticated/admin/produtos': typeof AuthenticatedAdminProdutosRoute
 }
 export interface FileRouteTypes {
@@ -136,8 +155,10 @@ export interface FileRouteTypes {
     | '/cozinha'
     | '/garcom'
     | '/mesa/$tableId'
+    | '/admin/caixa'
     | '/admin/equipe'
     | '/admin/mesas'
+    | '/admin/pedidos'
     | '/admin/produtos'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -149,8 +170,10 @@ export interface FileRouteTypes {
     | '/cozinha'
     | '/garcom'
     | '/mesa/$tableId'
+    | '/admin/caixa'
     | '/admin/equipe'
     | '/admin/mesas'
+    | '/admin/pedidos'
     | '/admin/produtos'
   id:
     | '__root__'
@@ -163,8 +186,10 @@ export interface FileRouteTypes {
     | '/_authenticated/cozinha'
     | '/_authenticated/garcom'
     | '/mesa/$tableId'
+    | '/_authenticated/admin/caixa'
     | '/_authenticated/admin/equipe'
     | '/_authenticated/admin/mesas'
+    | '/_authenticated/admin/pedidos'
     | '/_authenticated/admin/produtos'
   fileRoutesById: FileRoutesById
 }
@@ -249,6 +274,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminProdutosRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/pedidos': {
+      id: '/_authenticated/admin/pedidos'
+      path: '/pedidos'
+      fullPath: '/admin/pedidos'
+      preLoaderRoute: typeof AuthenticatedAdminPedidosRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/mesas': {
       id: '/_authenticated/admin/mesas'
       path: '/mesas'
@@ -263,18 +295,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminEquipeRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/caixa': {
+      id: '/_authenticated/admin/caixa'
+      path: '/caixa'
+      fullPath: '/admin/caixa'
+      preLoaderRoute: typeof AuthenticatedAdminCaixaRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
   }
 }
 
 interface AuthenticatedAdminRouteChildren {
+  AuthenticatedAdminCaixaRoute: typeof AuthenticatedAdminCaixaRoute
   AuthenticatedAdminEquipeRoute: typeof AuthenticatedAdminEquipeRoute
   AuthenticatedAdminMesasRoute: typeof AuthenticatedAdminMesasRoute
+  AuthenticatedAdminPedidosRoute: typeof AuthenticatedAdminPedidosRoute
   AuthenticatedAdminProdutosRoute: typeof AuthenticatedAdminProdutosRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
+  AuthenticatedAdminCaixaRoute: AuthenticatedAdminCaixaRoute,
   AuthenticatedAdminEquipeRoute: AuthenticatedAdminEquipeRoute,
   AuthenticatedAdminMesasRoute: AuthenticatedAdminMesasRoute,
+  AuthenticatedAdminPedidosRoute: AuthenticatedAdminPedidosRoute,
   AuthenticatedAdminProdutosRoute: AuthenticatedAdminProdutosRoute,
 }
 
@@ -308,3 +351,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
