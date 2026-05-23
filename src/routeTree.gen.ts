@@ -18,6 +18,7 @@ import { Route as MesaTableIdRouteImport } from './routes/mesa.$tableId'
 import { Route as AuthenticatedGarcomRouteImport } from './routes/_authenticated/garcom'
 import { Route as AuthenticatedCozinhaRouteImport } from './routes/_authenticated/cozinha'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedAdminRelatoriosRouteImport } from './routes/_authenticated/admin.relatorios'
 import { Route as AuthenticatedAdminProdutosRouteImport } from './routes/_authenticated/admin.produtos'
 import { Route as AuthenticatedAdminPedidosRouteImport } from './routes/_authenticated/admin.pedidos'
 import { Route as AuthenticatedAdminMesasRouteImport } from './routes/_authenticated/admin.mesas'
@@ -68,6 +69,12 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAdminRelatoriosRoute =
+  AuthenticatedAdminRelatoriosRouteImport.update({
+    id: '/relatorios',
+    path: '/relatorios',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminProdutosRoute =
   AuthenticatedAdminProdutosRouteImport.update({
     id: '/produtos',
@@ -111,6 +118,7 @@ export interface FileRoutesByFullPath {
   '/admin/mesas': typeof AuthenticatedAdminMesasRoute
   '/admin/pedidos': typeof AuthenticatedAdminPedidosRoute
   '/admin/produtos': typeof AuthenticatedAdminProdutosRoute
+  '/admin/relatorios': typeof AuthenticatedAdminRelatoriosRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -126,6 +134,7 @@ export interface FileRoutesByTo {
   '/admin/mesas': typeof AuthenticatedAdminMesasRoute
   '/admin/pedidos': typeof AuthenticatedAdminPedidosRoute
   '/admin/produtos': typeof AuthenticatedAdminProdutosRoute
+  '/admin/relatorios': typeof AuthenticatedAdminRelatoriosRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -143,6 +152,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/mesas': typeof AuthenticatedAdminMesasRoute
   '/_authenticated/admin/pedidos': typeof AuthenticatedAdminPedidosRoute
   '/_authenticated/admin/produtos': typeof AuthenticatedAdminProdutosRoute
+  '/_authenticated/admin/relatorios': typeof AuthenticatedAdminRelatoriosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -160,6 +170,7 @@ export interface FileRouteTypes {
     | '/admin/mesas'
     | '/admin/pedidos'
     | '/admin/produtos'
+    | '/admin/relatorios'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -175,6 +186,7 @@ export interface FileRouteTypes {
     | '/admin/mesas'
     | '/admin/pedidos'
     | '/admin/produtos'
+    | '/admin/relatorios'
   id:
     | '__root__'
     | '/'
@@ -191,6 +203,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/mesas'
     | '/_authenticated/admin/pedidos'
     | '/_authenticated/admin/produtos'
+    | '/_authenticated/admin/relatorios'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -267,6 +280,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/admin/relatorios': {
+      id: '/_authenticated/admin/relatorios'
+      path: '/relatorios'
+      fullPath: '/admin/relatorios'
+      preLoaderRoute: typeof AuthenticatedAdminRelatoriosRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/produtos': {
       id: '/_authenticated/admin/produtos'
       path: '/produtos'
@@ -311,6 +331,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminMesasRoute: typeof AuthenticatedAdminMesasRoute
   AuthenticatedAdminPedidosRoute: typeof AuthenticatedAdminPedidosRoute
   AuthenticatedAdminProdutosRoute: typeof AuthenticatedAdminProdutosRoute
+  AuthenticatedAdminRelatoriosRoute: typeof AuthenticatedAdminRelatoriosRoute
 }
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
@@ -319,6 +340,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminMesasRoute: AuthenticatedAdminMesasRoute,
   AuthenticatedAdminPedidosRoute: AuthenticatedAdminPedidosRoute,
   AuthenticatedAdminProdutosRoute: AuthenticatedAdminProdutosRoute,
+  AuthenticatedAdminRelatoriosRoute: AuthenticatedAdminRelatoriosRoute,
 }
 
 const AuthenticatedAdminRouteWithChildren =
