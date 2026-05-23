@@ -199,6 +199,23 @@ function MesaPage() {
             Mesa {table.number}
           </div>
           <h1 className="mt-1 text-3xl font-black tracking-tight">{restaurant.name}</h1>
+
+          <div className="mt-4 flex gap-2">
+            <button
+              onClick={() => void callWaiter()}
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-white/15 backdrop-blur px-3 py-2 text-xs font-bold hover:bg-white/25 transition-colors"
+            >
+              <Bell className="h-3.5 w-3.5" /> Chamar garçom
+            </button>
+            <a
+              href={`https://wa.me/?text=${encodeURIComponent(`Olá ${restaurant.name}, estou na mesa ${table.number}.`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-white/15 backdrop-blur px-3 py-2 text-xs font-bold hover:bg-white/25 transition-colors"
+            >
+              <MessageCircle className="h-3.5 w-3.5" /> WhatsApp
+            </a>
+          </div>
         </div>
       </div>
 
