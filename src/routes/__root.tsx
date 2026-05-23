@@ -66,6 +66,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "Cardápio digital via QR Code, pedidos em tempo real, cozinha kanban e gestão completa. Tudo em um só lugar.",
       },
+      { property: "og:title", content: "Mesa.io — Sistema Operacional para Restaurantes" },
+      { name: "twitter:title", content: "Mesa.io — Sistema Operacional para Restaurantes" },
+      { name: "description", content: "Orderly Table is a modern SaaS platform for restaurants, streamlining operations and enhancing customer experience." },
+      { property: "og:description", content: "Orderly Table is a modern SaaS platform for restaurants, streamlining operations and enhancing customer experience." },
+      { name: "twitter:description", content: "Orderly Table is a modern SaaS platform for restaurants, streamlining operations and enhancing customer experience." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/bd6ec75a-2a60-48fb-bd34-d0d510183fc0/id-preview-827e4c0c--a34f3908-0624-49eb-ae28-892ddfb03c51.lovable.app-1779408401117.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/bd6ec75a-2a60-48fb-bd34-d0d510183fc0/id-preview-827e4c0c--a34f3908-0624-49eb-ae28-892ddfb03c51.lovable.app-1779408401117.png" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:type", content: "website" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
