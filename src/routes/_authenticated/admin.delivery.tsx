@@ -57,7 +57,7 @@ function DeliveryPage() {
   }, [restaurant, load]);
 
   const advance = async (o: Order, next: string) => {
-    const { error } = await supabase.from("orders").update({ status: next as Order["status"] }).eq("id", o.id);
+    const { error } = await supabase.from("orders").update({ status: next as never }).eq("id", o.id);
     if (error) toast.error("Erro ao atualizar"); else toast.success("Status atualizado");
   };
 
