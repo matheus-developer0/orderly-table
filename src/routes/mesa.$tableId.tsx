@@ -12,6 +12,8 @@ import {
   Search,
   X,
   CheckCircle2,
+  Bell,
+  MessageCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
