@@ -237,6 +237,3 @@ function AuthenticatedLayout() {
     </div>
   );
 }
-
-// silence unused import warning  
-void X;
