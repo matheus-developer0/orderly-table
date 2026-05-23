@@ -130,6 +130,16 @@ function MesaPage() {
     setSending(false);
   };
 
+  const callWaiter = async () => {
+    if (!restaurant || !table) return;
+    const { error } = await supabase.from("waiter_calls").insert({
+      restaurant_id: restaurant.id,
+      table_id: table.id,
+      reason: "call",
+    });
+    if (error) toast.error("Erro ao chamar o garçom.");
+    else toast.success("Garçom a caminho! 🛎️", { duration: 2500 });
+
   const filtered = products.filter((p) => {
     const matchSearch = !search || p.name.toLowerCase().includes(search.toLowerCase());
     const matchCat = !activeCategory || p.category_id === activeCategory;
