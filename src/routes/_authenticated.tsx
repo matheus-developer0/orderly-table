@@ -83,12 +83,18 @@ function AuthenticatedLayout() {
   }
 
   const NAV: NavItem[] = [
-    { to: "/admin",          label: "Dashboard",  icon: LayoutDashboard },
-    { to: "/admin/produtos", label: "Cardápio",   icon: Pizza },
-    { to: "/admin/mesas",    label: "Mesas",      icon: QrCode },
-    { to: "/cozinha",        label: "Cozinha",    icon: ChefHat,     badge: newOrders > 0 ? newOrders : undefined },
-    { to: "/garcom",         label: "Garçom",     icon: HandPlatter, badge: waiterCalls > 0 ? waiterCalls : undefined },
-    { to: "/admin/equipe",   label: "Equipe",     icon: Users },
+    { to: "/admin",                label: "Dashboard",    icon: LayoutDashboard },
+    { to: "/cozinha",              label: "Cozinha",      icon: ChefHat,     badge: newOrders > 0 ? newOrders : undefined },
+    { to: "/garcom",               label: "Garçom",       icon: HandPlatter, badge: waiterCalls > 0 ? waiterCalls : undefined },
+    { to: "/admin/pedidos",        label: "Pedidos",      icon: Receipt },
+    { to: "/admin/delivery",       label: "Delivery",     icon: Bike },
+    { to: "/admin/caixa",          label: "Caixa",        icon: Wallet },
+    { to: "/admin/relatorios",     label: "Relatórios",   icon: BarChart3 },
+    { to: "/admin/produtos",       label: "Cardápio",     icon: Pizza },
+    { to: "/admin/promocoes",      label: "Promoções",    icon: Sparkles },
+    { to: "/admin/mesas",          label: "Mesas & QR",   icon: QrCode },
+    { to: "/admin/equipe",         label: "Equipe",       icon: Users },
+    { to: "/admin/configuracoes",  label: "Configurações",icon: Settings },
   ];
 
   const SidebarContent = () => (
