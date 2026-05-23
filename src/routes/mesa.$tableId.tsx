@@ -139,6 +139,9 @@ function MesaPage() {
     });
     if (error) toast.error("Erro ao chamar o garçom.");
     else toast.success("Garçom a caminho! 🛎️", { duration: 2500 });
+  };
+
+
 
   const filtered = products.filter((p) => {
     const matchSearch = !search || p.name.toLowerCase().includes(search.toLowerCase());
