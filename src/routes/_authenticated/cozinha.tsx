@@ -209,14 +209,33 @@ function CozinhaPage() {
     void load();
   }, [load]);
 
-  // Realtime
+  // Realtime + beep on new orders
   useEffect(() => {
     if (!restaurant) return;
+    const beep = () => {
+      try {
+        const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+        const ctx = new AC();
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.type = "sine"; o.frequency.value = 880;
+        g.gain.setValueAtTime(0.0001, ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.25, ctx.currentTime + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.4);
+        o.start(); o.stop(ctx.currentTime + 0.42);
+      } catch { /* audio not allowed yet */ }
+    };
     const channel = supabase
       .channel(`kitchen-${restaurant.id}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "orders", filter: `restaurant_id=eq.${restaurant.id}` },
+        { event: "INSERT", schema: "public", table: "orders", filter: `restaurant_id=eq.${restaurant.id}` },
+        () => { beep(); toast.success("🔔 Novo pedido na cozinha!"); void load(); },
+      )
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "orders", filter: `restaurant_id=eq.${restaurant.id}` },
         () => void load(),
       )
       .subscribe();
