@@ -71,10 +71,14 @@ function ConfigPage() {
       setAddress(data?.address ?? "");
       const s = (data?.settings ?? {}) as Settings;
       setNotif({ ...DEFAULT_NOTIF, ...(s.notif ?? {}) });
-      const p = (s.print ?? {}) as Settings["print"];
-      setPrint({ ...DEFAULT_PRINT, ...(p ?? {}) } as Toggles);
-      if (p?.printer_name) setPrinterName(p.printer_name);
-      if (p?.paper_width) setPaperWidth(p.paper_width);
+      const rawPrint = (s.print ?? {}) as Record<string, unknown>;
+      const printToggles: Toggles = { ...DEFAULT_PRINT };
+      for (const k of Object.keys(DEFAULT_PRINT)) {
+        if (typeof rawPrint[k] === "boolean") printToggles[k] = rawPrint[k] as boolean;
+      }
+      setPrint(printToggles);
+      if (typeof rawPrint.printer_name === "string") setPrinterName(rawPrint.printer_name);
+      if (typeof rawPrint.paper_width === "string") setPaperWidth(rawPrint.paper_width);
       setPayment({ ...DEFAULT_PAYMENT, ...(s.payment ?? {}) });
     })();
   }, [restaurant]);
