@@ -10,6 +10,40 @@ export const Route = createFileRoute("/_authenticated/admin/configuracoes")({
   component: ConfigPage,
 });
 
+type Toggles = Record<string, boolean>;
+type Settings = {
+  notif?: Toggles;
+  print?: Toggles & { printer_name?: string; paper_width?: string };
+  payment?: Toggles;
+};
+
+const DEFAULT_NOTIF: Toggles = {
+  sound_new_order: true,
+  push_waiter_call: true,
+  daily_email_summary: false,
+  stuck_table_alert: true,
+};
+const DEFAULT_PRINT: Toggles = { auto_print_new_orders: true, customer_receipt: true };
+const DEFAULT_PAYMENT: Toggles = { pix: true, credit: true, debit: true, cash: true, voucher: false };
+
+const NOTIF_LABELS: Record<string, { label: string; desc: string }> = {
+  sound_new_order: { label: "Som em novos pedidos", desc: "Toca um som ao receber pedido na cozinha" },
+  push_waiter_call: { label: "Push no chamado de garçom", desc: "Notificação imediata para garçons" },
+  daily_email_summary: { label: "Resumo diário por e-mail", desc: "Receba o fechamento do dia às 23h59" },
+  stuck_table_alert: { label: "Alerta de mesa parada > 30min", desc: "Lembrete pra cobrar atenção" },
+};
+const PRINT_LABELS: Record<string, { label: string; desc: string }> = {
+  auto_print_new_orders: { label: "Imprimir automaticamente novos pedidos", desc: "Cozinha + bar" },
+  customer_receipt: { label: "Cupom para cliente ao fechar conta", desc: "Não-fiscal" },
+};
+const PAYMENT_LABELS: Record<string, { label: string; desc: string }> = {
+  pix:     { label: "Pix",                 desc: "Receba via QR Code instantâneo" },
+  credit:  { label: "Cartão de crédito",   desc: "Visa, Master, Elo, Hipercard" },
+  debit:   { label: "Cartão de débito",    desc: "Maquininha integrada" },
+  cash:    { label: "Dinheiro",            desc: "Receba na hora da entrega" },
+  voucher: { label: "Vale-refeição",       desc: "Sodexo, Ticket, Alelo" },
+};
+
 function ConfigPage() {
   const { restaurant, refreshRestaurant } = useAuth();
   const [name, setName] = useState("");
@@ -17,6 +51,11 @@ function ConfigPage() {
   const [address, setAddress] = useState("");
   const [primary, setPrimary] = useState("#E11D2E");
   const [accent, setAccent] = useState("#FFC93C");
+  const [printerName, setPrinterName] = useState("Bematech MP-4200 TH");
+  const [paperWidth, setPaperWidth] = useState("80mm");
+  const [notif, setNotif] = useState<Toggles>(DEFAULT_NOTIF);
+  const [print, setPrint] = useState<Toggles>(DEFAULT_PRINT);
+  const [payment, setPayment] = useState<Toggles>(DEFAULT_PAYMENT);
   const [saving, setSaving] = useState(false);
   const [tab, setTab] = useState<"loja" | "marca" | "notif" | "impressao" | "pagto">("loja");
 
@@ -26,21 +65,34 @@ function ConfigPage() {
     setPrimary(restaurant.primary_color ?? "#E11D2E");
     setAccent(restaurant.accent_color ?? "#FFC93C");
     void (async () => {
-      const { data } = await supabase.from("restaurants").select("phone,address").eq("id", restaurant.id).maybeSingle();
+      const { data } = await supabase.from("restaurants").select("phone,address,settings").eq("id", restaurant.id).maybeSingle();
       setPhone(data?.phone ?? "");
       setAddress(data?.address ?? "");
+      const s = (data?.settings ?? {}) as Settings;
+      setNotif({ ...DEFAULT_NOTIF, ...(s.notif ?? {}) });
+      const p = (s.print ?? {}) as Settings["print"];
+      setPrint({ ...DEFAULT_PRINT, ...(p ?? {}) } as Toggles);
+      if (p?.printer_name) setPrinterName(p.printer_name);
+      if (p?.paper_width) setPaperWidth(p.paper_width);
+      setPayment({ ...DEFAULT_PAYMENT, ...(s.payment ?? {}) });
     })();
   }, [restaurant]);
 
   const save = async () => {
     if (!restaurant) return;
     setSaving(true);
+    const settings: Settings = {
+      notif,
+      print: { ...print, printer_name: printerName, paper_width: paperWidth },
+      payment,
+    };
     const { error } = await supabase
       .from("restaurants")
-      .update({ name, phone, address, primary_color: primary, accent_color: accent })
+      .update({ name, phone, address, primary_color: primary, accent_color: accent, settings })
       .eq("id", restaurant.id);
     setSaving(false);
-    if (error) toast.error("Erro ao salvar"); else { toast.success("Configurações salvas!"); await refreshRestaurant(); }
+    if (error) toast.error("Erro ao salvar");
+    else { toast.success("Configurações salvas!"); await refreshRestaurant(); }
   };
 
   const TABS = [
@@ -85,20 +137,8 @@ function ConfigPage() {
 
         {tab === "marca" && (
           <>
-            <div>
-              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Cor primária</label>
-              <div className="mt-2 flex items-center gap-3">
-                <input type="color" value={primary} onChange={(e) => setPrimary(e.target.value)} className="h-12 w-20 rounded-lg cursor-pointer border border-border" />
-                <input value={primary} onChange={(e) => setPrimary(e.target.value)} className="h-10 flex-1 rounded-xl border border-input bg-background px-3 text-sm font-mono outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" />
-              </div>
-            </div>
-            <div>
-              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Cor de destaque</label>
-              <div className="mt-2 flex items-center gap-3">
-                <input type="color" value={accent} onChange={(e) => setAccent(e.target.value)} className="h-12 w-20 rounded-lg cursor-pointer border border-border" />
-                <input value={accent} onChange={(e) => setAccent(e.target.value)} className="h-10 flex-1 rounded-xl border border-input bg-background px-3 text-sm font-mono outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" />
-              </div>
-            </div>
+            <ColorRow label="Cor primária" value={primary} onChange={setPrimary} />
+            <ColorRow label="Cor de destaque" value={accent} onChange={setAccent} />
             <div className="rounded-xl border border-border p-4">
               <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Preview</div>
               <div className="rounded-xl p-4 text-white font-bold" style={{ background: `linear-gradient(135deg, ${primary}, ${accent})` }}>
@@ -110,25 +150,21 @@ function ConfigPage() {
 
         {tab === "notif" && (
           <div className="space-y-3">
-            {[
-              { label: "Som em novos pedidos", desc: "Toca um som ao receber pedido na cozinha" },
-              { label: "Push no chamado de garçom", desc: "Notificação imediata para garçons" },
-              { label: "Resumo diário por e-mail", desc: "Receba o fechamento do dia às 23h59" },
-              { label: "Alerta de mesa parada > 30min", desc: "Lembrete pra cobrar atenção" },
-            ].map((n) => (
-              <ToggleRow key={n.label} {...n} />
+            {Object.entries(NOTIF_LABELS).map(([k, m]) => (
+              <ToggleRow key={k} label={m.label} desc={m.desc}
+                on={!!notif[k]} onChange={(v) => setNotif({ ...notif, [k]: v })} />
             ))}
           </div>
         )}
 
         {tab === "impressao" && (
           <div className="space-y-3">
-            <Field label="Nome da impressora" value="Bematech MP-4200 TH" onChange={() => {}} />
-            <Field label="Largura do papel" value="80mm" onChange={() => {}} />
-            {[
-              { label: "Imprimir automaticamente novos pedidos", desc: "Cozinha + bar" },
-              { label: "Cupom para cliente ao fechar conta", desc: "Não-fiscal" },
-            ].map((n) => <ToggleRow key={n.label} {...n} />)}
+            <Field label="Nome da impressora" value={printerName} onChange={setPrinterName} />
+            <Field label="Largura do papel" value={paperWidth} onChange={setPaperWidth} placeholder="58mm ou 80mm" />
+            {Object.entries(PRINT_LABELS).map(([k, m]) => (
+              <ToggleRow key={k} label={m.label} desc={m.desc}
+                on={!!print[k]} onChange={(v) => setPrint({ ...print, [k]: v })} />
+            ))}
             <div className="rounded-xl border border-dashed border-border p-4 text-xs text-muted-foreground">
               <strong>Dica:</strong> impressoras USB/Bluetooth exigem um agente desktop. Em breve disponível.
             </div>
@@ -137,13 +173,10 @@ function ConfigPage() {
 
         {tab === "pagto" && (
           <div className="space-y-3">
-            {[
-              { label: "Pix", on: true, desc: "Receba via QR Code instantâneo" },
-              { label: "Cartão de crédito", on: true, desc: "Visa, Master, Elo, Hipercard" },
-              { label: "Cartão de débito", on: true, desc: "Maquininha integrada" },
-              { label: "Dinheiro", on: true, desc: "Receba na hora da entrega" },
-              { label: "Vale-refeição", on: false, desc: "Sodexo, Ticket, Alelo" },
-            ].map((p) => <ToggleRow key={p.label} label={p.label} desc={p.desc} defaultOn={p.on} />)}
+            {Object.entries(PAYMENT_LABELS).map(([k, m]) => (
+              <ToggleRow key={k} label={m.label} desc={m.desc}
+                on={!!payment[k]} onChange={(v) => setPayment({ ...payment, [k]: v })} />
+            ))}
           </div>
         )}
       </motion.div>
@@ -173,15 +206,26 @@ function Field({ label, value, onChange, placeholder }: { label: string; value: 
   );
 }
 
-function ToggleRow({ label, desc, defaultOn = true }: { label: string; desc: string; defaultOn?: boolean }) {
-  const [on, setOn] = useState(defaultOn);
+function ColorRow({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  return (
+    <div>
+      <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{label}</label>
+      <div className="mt-2 flex items-center gap-3">
+        <input type="color" value={value} onChange={(e) => onChange(e.target.value)} className="h-12 w-20 rounded-lg cursor-pointer border border-border" />
+        <input value={value} onChange={(e) => onChange(e.target.value)} className="h-10 flex-1 rounded-xl border border-input bg-background px-3 text-sm font-mono outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" />
+      </div>
+    </div>
+  );
+}
+
+function ToggleRow({ label, desc, on, onChange }: { label: string; desc: string; on: boolean; onChange: (v: boolean) => void }) {
   return (
     <div className="flex items-center justify-between rounded-xl border border-border p-4">
       <div>
         <div className="font-semibold text-sm">{label}</div>
         <div className="text-xs text-muted-foreground mt-0.5">{desc}</div>
       </div>
-      <button onClick={() => setOn(!on)} className={`relative h-6 w-11 rounded-full transition-colors ${on ? "bg-primary" : "bg-muted"}`}>
+      <button onClick={() => onChange(!on)} className={`relative h-6 w-11 rounded-full transition-colors ${on ? "bg-primary" : "bg-muted"}`}>
         <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${on ? "translate-x-5" : "translate-x-0.5"}`} />
       </button>
     </div>
