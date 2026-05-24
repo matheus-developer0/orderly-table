@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      cash_sessions: {
+        Row: {
+          closed_at: string | null
+          closing_amount: number | null
+          created_at: string
+          id: string
+          notes: string | null
+          opened_at: string
+          opened_by: string | null
+          opening_amount: number
+          restaurant_id: string
+        }
+        Insert: {
+          closed_at?: string | null
+          closing_amount?: number | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          opened_at?: string
+          opened_by?: string | null
+          opening_amount?: number
+          restaurant_id: string
+        }
+        Update: {
+          closed_at?: string | null
+          closing_amount?: number | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          opened_at?: string
+          opened_by?: string | null
+          opening_amount?: number
+          restaurant_id?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -299,6 +335,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      promotions: {
+        Row: {
+          active: boolean
+          created_at: string
+          description: string | null
+          ends_at: string | null
+          id: string
+          restaurant_id: string
+          scope: string | null
+          starts_at: string | null
+          title: string
+          type: string
+          updated_at: string
+          value: number
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          restaurant_id: string
+          scope?: string | null
+          starts_at?: string | null
+          title: string
+          type?: string
+          updated_at?: string
+          value?: number
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          ends_at?: string | null
+          id?: string
+          restaurant_id?: string
+          scope?: string | null
+          starts_at?: string | null
+          title?: string
+          type?: string
+          updated_at?: string
+          value?: number
+        }
+        Relationships: []
       }
       restaurants: {
         Row: {
