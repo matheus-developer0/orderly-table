@@ -11,9 +11,10 @@ export const Route = createFileRoute("/_authenticated/admin/configuracoes")({
 });
 
 type Toggles = Record<string, boolean>;
+type PrintSettings = Toggles & { printer_name?: string; paper_width?: string };
 type Settings = {
   notif?: Toggles;
-  print?: Toggles & { printer_name?: string; paper_width?: string };
+  print?: Record<string, boolean | string | undefined>;
   payment?: Toggles;
 };
 
