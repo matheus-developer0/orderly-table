@@ -320,5 +320,3 @@ function CozinhaPage() {
   );
 }
 
-// suppress
-void AlertCircle; void Bike; void CheckCircle2;

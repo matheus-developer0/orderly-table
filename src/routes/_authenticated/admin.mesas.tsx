@@ -368,5 +368,3 @@ function MesasPage() {
   );
 }
 
-// suppress
-void AlertTriangle; void Utensils;

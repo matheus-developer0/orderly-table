@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { HandPlatter, Loader2, Bell, CheckCircle2, Clock, RefreshCw, Receipt, ChevronDown, ChevronUp, DollarSign, Users, X, XCircle } from "lucide-react";
+import { HandPlatter, Loader2, Bell, CheckCircle2, Clock, RefreshCw, Receipt, ChevronDown, ChevronUp, DollarSign, Users, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
@@ -312,8 +312,6 @@ function GarcomPage() {
       </AnimatePresence>
 
       {/* suppress unused */}
-      {void busy}
-      {void X}
     </div>
   );
 }

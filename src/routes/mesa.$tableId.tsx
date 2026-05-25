@@ -458,5 +458,3 @@ function ProductCard({ product, onAdd, qty, brandColor }: { product: Product; on
   );
 }
 
-// suppress unused
-void ArrowLeft;
