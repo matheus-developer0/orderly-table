@@ -1,270 +1,276 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { Wallet, TrendingUp, CreditCard, Banknote, QrCode, DollarSign, FileText, Lock, Unlock, Loader2, X } from "lucide-react";
+import { useEffect, useState, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Wallet, Plus, Loader2, X, Check, Lock, Unlock, Receipt, Clock, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/_authenticated/admin/caixa")({
-  component: CaixaPage,
-});
+export const Route = createFileRoute("/_authenticated/admin/caixa")({ component: CaixaPage });
 
-type Session = {
-  id: string;
-  opened_at: string;
-  opening_amount: number;
-  closed_at: string | null;
-  closing_amount: number | null;
-  notes: string | null;
-};
+type Session = { id: string; opened_at: string; closed_at: string | null; opening_amount: number; closing_amount: number | null; notes: string | null; orders_total?: number; orders_count?: number };
+
+const fmt = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+function OpenModal({ restaurantId, userId, onClose, onOpened }: { restaurantId: string; userId: string; onClose: () => void; onOpened: () => void }) {
+  const [amount, setAmount] = useState("0");
+  const [notes, setNotes] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const open = async () => {
+    setSaving(true);
+    const { error } = await supabase.from("cash_sessions").insert({
+      restaurant_id: restaurantId, opened_by: userId,
+      opening_amount: Number(amount), notes: notes || null,
+    });
+    setSaving(false);
+    if (error) return toast.error(error.message);
+    toast.success("Caixa aberto!");
+    onOpened(); onClose();
+  };
+
+  return (<>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="fixed inset-0 z-30 bg-black/60 backdrop-blur-sm" />
+    <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.96 }}
+      className="fixed left-1/2 top-1/2 z-40 w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-card p-6 shadow-2xl space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-extrabold">Abrir caixa</h2>
+        <button onClick={onClose} className="rounded-full p-1 hover:bg-muted text-muted-foreground"><X className="h-5 w-5" /></button>
+      </div>
+      <div className="space-y-1.5">
+        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Valor inicial (troco) R$</label>
+        <input type="number" min={0} step={0.01} value={amount} onChange={e => setAmount(e.target.value)} className="input-base text-xl font-bold" autoFocus />
+      </div>
+      <div className="space-y-1.5">
+        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Observações</label>
+        <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} className="input-base resize-none" placeholder="Opcional..." />
+      </div>
+      <div className="flex gap-3">
+        <button onClick={onClose} className="flex-1 h-11 rounded-xl border border-border text-sm font-semibold hover:bg-muted">Cancelar</button>
+        <button onClick={() => void open()} disabled={saving}
+          className="flex-1 h-11 rounded-xl gradient-brand text-sm font-bold text-primary-foreground shadow-brand flex items-center justify-center gap-2 disabled:opacity-60">
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Unlock className="h-4 w-4" />Abrir</>}
+        </button>
+      </div>
+    </motion.div>
+  </>);
+}
+
+function CloseModal({ session, onClose, onClosed }: { session: Session; onClose: () => void; onClosed: () => void }) {
+  const [amount, setAmount] = useState("");
+  const [notes, setNotes] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const expected = (session.opening_amount ?? 0) + (session.orders_total ?? 0);
+  const diff = amount ? Number(amount) - expected : null;
+
+  const close = async () => {
+    if (!amount) return toast.error("Informe o valor em caixa");
+    setSaving(true);
+    const { error } = await supabase.from("cash_sessions").update({
+      closed_at: new Date().toISOString(),
+      closing_amount: Number(amount),
+      notes: notes || null,
+    }).eq("id", session.id);
+    setSaving(false);
+    if (error) return toast.error(error.message);
+    toast.success("Caixa fechado!");
+    onClosed(); onClose();
+  };
+
+  return (<>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="fixed inset-0 z-30 bg-black/60 backdrop-blur-sm" />
+    <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.96 }}
+      className="fixed left-1/2 top-1/2 z-40 w-full max-w-sm -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-card p-6 shadow-2xl space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-extrabold">Fechar caixa</h2>
+        <button onClick={onClose} className="rounded-full p-1 hover:bg-muted text-muted-foreground"><X className="h-5 w-5" /></button>
+      </div>
+      <div className="rounded-xl bg-muted/50 p-4 space-y-2 text-sm">
+        <div className="flex justify-between"><span className="text-muted-foreground">Abertura</span><span className="font-semibold">{fmt(session.opening_amount)}</span></div>
+        <div className="flex justify-between"><span className="text-muted-foreground">Vendas ({session.orders_count ?? 0} pedidos)</span><span className="font-semibold text-success">+{fmt(session.orders_total ?? 0)}</span></div>
+        <div className="flex justify-between border-t border-border pt-2 font-bold"><span>Esperado em caixa</span><span>{fmt(expected)}</span></div>
+      </div>
+      <div className="space-y-1.5">
+        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Valor real em caixa R$</label>
+        <input type="number" min={0} step={0.01} value={amount} onChange={e => setAmount(e.target.value)} className="input-base text-xl font-bold" autoFocus placeholder="0,00" />
+      </div>
+      {diff !== null && (
+        <div className={cn("flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold", diff >= 0 ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive")}>
+          {diff >= 0 ? <Check className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
+          {diff >= 0 ? `Sobra de ${fmt(diff)}` : `Falta de ${fmt(Math.abs(diff))}`}
+        </div>
+      )}
+      <div className="space-y-1.5">
+        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Observações</label>
+        <textarea value={notes} onChange={e => setNotes(e.target.value)} rows={2} className="input-base resize-none" placeholder="Opcional..." />
+      </div>
+      <div className="flex gap-3">
+        <button onClick={onClose} className="flex-1 h-11 rounded-xl border border-border text-sm font-semibold hover:bg-muted">Cancelar</button>
+        <button onClick={() => void close()} disabled={saving}
+          className="flex-1 h-11 rounded-xl bg-destructive text-destructive-foreground text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-60">
+          {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Lock className="h-4 w-4" />Fechar caixa</>}
+        </button>
+      </div>
+    </motion.div>
+  </>);
+}
 
 function CaixaPage() {
   const { restaurant, user } = useAuth();
-  const [session, setSession] = useState<Session | null>(null);
-  const [history, setHistory] = useState<Session[]>([]);
-  const [data, setData] = useState({ revenue: 0, count: 0, dine_in: 0, delivery: 0, takeout: 0 });
+  const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dialog, setDialog] = useState<"open" | "close" | null>(null);
+  const [openModal, setOpenModal] = useState(false);
+  const [closeModal, setCloseModal] = useState<Session | null>(null);
 
   const load = useCallback(async () => {
     if (!restaurant) return;
-    setLoading(true);
-    const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+    const { data } = await supabase.from("cash_sessions")
+      .select("id,opened_at,closed_at,opening_amount,closing_amount,notes")
+      .eq("restaurant_id", restaurant.id)
+      .order("opened_at", { ascending: false })
+      .limit(30);
 
-    const [openRes, histRes, ordersRes] = await Promise.all([
-      supabase.from("cash_sessions").select("*").eq("restaurant_id", restaurant.id).is("closed_at", null).order("opened_at", { ascending: false }).limit(1).maybeSingle(),
-      supabase.from("cash_sessions").select("*").eq("restaurant_id", restaurant.id).not("closed_at", "is", null).order("closed_at", { ascending: false }).limit(5),
-      supabase.from("orders").select("total,type").eq("restaurant_id", restaurant.id).gte("created_at", todayStart.toISOString()).neq("status", "cancelled"),
-    ]);
+    if (!data) return setLoading(false);
 
-    setSession((openRes.data as Session) ?? null);
-    setHistory((histRes.data ?? []) as Session[]);
-    const list = ordersRes.data ?? [];
-    const sum = (t: string) => list.filter((o) => o.type === t).reduce((s, o) => s + Number(o.total), 0);
-    setData({
-      revenue: list.reduce((s, o) => s + Number(o.total), 0),
-      count: list.length,
-      dine_in: sum("dine_in"),
-      delivery: sum("delivery"),
-      takeout: sum("takeout"),
-    });
+    // Enrich with orders totals per session
+    const enriched: Session[] = await Promise.all(data.map(async s => {
+      const from = s.opened_at;
+      const to = s.closed_at ?? new Date().toISOString();
+      const { data: orders } = await supabase.from("orders")
+        .select("id,total")
+        .eq("restaurant_id", restaurant.id)
+        .neq("status", "cancelled")
+        .gte("created_at", from)
+        .lte("created_at", to);
+      const orders_total = (orders ?? []).reduce((sum, o) => sum + Number(o.total), 0);
+      return { ...s, orders_total, orders_count: (orders ?? []).length };
+    }));
+
+    setSessions(enriched);
     setLoading(false);
   }, [restaurant]);
 
   useEffect(() => { void load(); }, [load]);
 
-  const fmt = (n: number) => n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-  const totalCaixa = (session?.opening_amount ?? 0) + data.revenue;
-
-  return (
-    <div className="space-y-8 p-6 lg:p-10">
-      <header className="flex items-start justify-between flex-wrap gap-4">
-        <div className="space-y-1">
-          <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Financeiro</div>
-          <h1 className="text-3xl font-extrabold tracking-tight">Caixa do dia</h1>
-          <p className="text-sm text-muted-foreground">
-            {new Date().toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
-          </p>
-        </div>
-        <button
-          onClick={() => setDialog(session ? "close" : "open")}
-          className={`flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-bold shadow-sm transition-all ${
-            session ? "bg-destructive text-destructive-foreground hover:opacity-90" : "bg-primary text-primary-foreground hover:opacity-90"
-          }`}
-        >
-          {session ? <><Lock className="h-4 w-4" /> Fechar caixa</> : <><Unlock className="h-4 w-4" /> Abrir caixa</>}
-        </button>
-      </header>
-
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-        className="rounded-3xl gradient-brand p-8 text-primary-foreground shadow-elevated">
-        <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest opacity-80">
-          <Wallet className="h-3.5 w-3.5" /> {session ? "Total em caixa agora" : "Caixa fechado"}
-        </div>
-        <div className="mt-2 text-5xl font-black tracking-tight">{loading ? "—" : fmt(totalCaixa)}</div>
-        <div className="mt-3 text-sm opacity-80">
-          {session ? (
-            <>Abertura: {fmt(session.opening_amount)} · Vendas: {fmt(data.revenue)} · {data.count} pedidos · Desde {new Date(session.opened_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</>
-          ) : (
-            <>Abra o caixa para começar a operar o dia</>
-          )}
-        </div>
-      </motion.div>
-
-      <section className="grid gap-4 sm:grid-cols-3">
-        {[
-          { label: "Salão", value: data.dine_in, icon: TrendingUp },
-          { label: "Delivery", value: data.delivery, icon: Banknote },
-          { label: "Balcão / retirada", value: data.takeout, icon: CreditCard },
-        ].map((s) => {
-          const Icon = s.icon;
-          return (
-            <div key={s.label} className="rounded-2xl border border-border bg-card p-5 shadow-card">
-              <div className="grid h-9 w-9 place-items-center rounded-lg bg-primary/10 text-primary mb-3">
-                <Icon className="h-4 w-4" />
-              </div>
-              <div className="text-2xl font-extrabold">{fmt(s.value)}</div>
-              <div className="text-xs text-muted-foreground mt-0.5">{s.label}</div>
-            </div>
-          );
-        })}
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Estimativa por forma de pagamento</h2>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            { label: "Pix", icon: QrCode, value: data.revenue * 0.45, color: "text-emerald-600 bg-emerald-500/10" },
-            { label: "Crédito", icon: CreditCard, value: data.revenue * 0.30, color: "text-blue-600 bg-blue-500/10" },
-            { label: "Débito", icon: CreditCard, value: data.revenue * 0.15, color: "text-purple-600 bg-purple-500/10" },
-            { label: "Dinheiro", icon: DollarSign, value: data.revenue * 0.10, color: "text-amber-600 bg-amber-500/10" },
-          ].map((p) => {
-            const Icon = p.icon;
-            return (
-              <div key={p.label} className="rounded-2xl border border-border bg-card p-4 shadow-card">
-                <div className="flex items-center justify-between">
-                  <div className={`grid h-8 w-8 place-items-center rounded-lg ${p.color}`}>
-                    <Icon className="h-4 w-4" />
-                  </div>
-                  <span className="text-[10px] text-muted-foreground">~estimado</span>
-                </div>
-                <div className="mt-3 text-lg font-extrabold">{fmt(p.value)}</div>
-                <div className="text-xs text-muted-foreground">{p.label}</div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {history.length > 0 && (
-        <section className="space-y-3">
-          <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Últimos fechamentos</h2>
-          <div className="rounded-2xl border border-border bg-card divide-y divide-border overflow-hidden">
-            {history.map((h) => (
-              <div key={h.id} className="flex items-center justify-between p-4">
-                <div>
-                  <div className="text-sm font-semibold">
-                    {new Date(h.opened_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
-                    {" · "}
-                    {new Date(h.opened_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
-                    {" → "}
-                    {h.closed_at && new Date(h.closed_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
-                  </div>
-                  {h.notes && <div className="text-xs text-muted-foreground mt-0.5">{h.notes}</div>}
-                </div>
-                <div className="text-right">
-                  <div className="text-xs text-muted-foreground">Fechamento</div>
-                  <div className="font-bold">{fmt(Number(h.closing_amount ?? 0))}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      <section className="rounded-2xl border border-border bg-card p-6 shadow-card">
-        <div className="flex items-start gap-4">
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-primary/10 text-primary">
-            <FileText className="h-5 w-5" />
-          </div>
-          <div className="flex-1">
-            <h3 className="font-bold">Relatório do dia</h3>
-            <p className="text-sm text-muted-foreground mt-1">
-              Ao fechar o caixa, geramos o registro completo: abertura, vendas e fechamento.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {dialog && (
-        <CashDialog
-          mode={dialog}
-          restaurantId={restaurant!.id}
-          userId={user?.id ?? null}
-          currentSession={session}
-          revenue={data.revenue}
-          onClose={() => setDialog(null)}
-          onDone={() => { setDialog(null); void load(); }}
-        />
-      )}
-    </div>
-  );
-}
-
-function CashDialog({ mode, restaurantId, userId, currentSession, revenue, onClose, onDone }: {
-  mode: "open" | "close";
-  restaurantId: string;
-  userId: string | null;
-  currentSession: Session | null;
-  revenue: number;
-  onClose: () => void;
-  onDone: () => void;
-}) {
-  const [amount, setAmount] = useState<string>(mode === "open" ? "200" : String(((currentSession?.opening_amount ?? 0) + revenue).toFixed(2)));
-  const [notes, setNotes] = useState("");
-  const [saving, setSaving] = useState(false);
-
-  const submit = async () => {
-    setSaving(true);
-    if (mode === "open") {
-      const { error } = await supabase.from("cash_sessions").insert({
-        restaurant_id: restaurantId,
-        opened_by: userId,
-        opening_amount: Number(amount) || 0,
-        notes: notes || null,
-      });
-      setSaving(false);
-      if (error) return toast.error("Erro ao abrir caixa");
-      toast.success("Caixa aberto. Bom trabalho!");
-    } else if (currentSession) {
-      const { error } = await supabase.from("cash_sessions").update({
-        closed_at: new Date().toISOString(),
-        closing_amount: Number(amount) || 0,
-        notes: notes || currentSession.notes,
-      }).eq("id", currentSession.id);
-      setSaving(false);
-      if (error) return toast.error("Erro ao fechar caixa");
-      toast.success("Caixa fechado! Relatório do dia salvo.");
-    }
-    onDone();
+  const activeSession = sessions.find(s => !s.closed_at);
+  const elapsed = (from: string) => {
+    const mins = Math.floor((Date.now() - new Date(from).getTime()) / 60000);
+    if (mins < 60) return `${mins}min aberto`;
+    return `${Math.floor(mins / 60)}h${mins % 60 > 0 ? ` ${mins % 60}min` : ""} aberto`;
   };
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4" onClick={onClose}>
-      <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }}
-        onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md rounded-2xl bg-card p-6 shadow-elevated space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-extrabold">{mode === "open" ? "Abrir caixa" : "Fechar caixa"}</h2>
-          <button onClick={onClose} className="rounded-lg p-2 hover:bg-muted"><X className="h-4 w-4" /></button>
+    <div className="flex flex-col h-full">
+      <div className="border-b border-border bg-card px-6 py-5 shrink-0">
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div>
+            <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Financeiro</div>
+            <h1 className="text-3xl font-extrabold tracking-tight">Caixa</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              {activeSession ? <span className="text-success font-semibold">● Caixa aberto — {elapsed(activeSession.opened_at)}</span> : "Caixa fechado"}
+            </p>
+          </div>
+          {!activeSession ? (
+            <button onClick={() => setOpenModal(true)}
+              className="flex h-11 items-center gap-2 rounded-xl gradient-brand px-4 text-sm font-bold text-primary-foreground shadow-brand hover:scale-[1.02] transition-transform">
+              <Plus className="h-4 w-4" />Abrir caixa
+            </button>
+          ) : (
+            <button onClick={() => setCloseModal(activeSession)}
+              className="flex h-11 items-center gap-2 rounded-xl bg-destructive text-destructive-foreground px-4 text-sm font-bold hover:opacity-90 transition-opacity">
+              <Lock className="h-4 w-4" />Fechar caixa
+            </button>
+          )}
         </div>
+      </div>
 
-        <div>
-          <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            {mode === "open" ? "Valor inicial em caixa (R$)" : "Valor final conferido (R$)"}
-          </label>
-          <input type="number" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)}
-            autoFocus
-            className="mt-1 h-12 w-full rounded-xl border border-input bg-background px-4 text-lg font-bold outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" />
+      {/* Active session summary */}
+      {activeSession && (
+        <div className="px-6 py-4 border-b border-border bg-success/5 shrink-0">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 max-w-2xl">
+            {[
+              { label: "Abertura", value: fmt(activeSession.opening_amount) },
+              { label: "Vendas", value: fmt(activeSession.orders_total ?? 0) },
+              { label: "Pedidos", value: String(activeSession.orders_count ?? 0) },
+              { label: "Total em caixa", value: fmt((activeSession.opening_amount ?? 0) + (activeSession.orders_total ?? 0)) },
+            ].map(s => (
+              <div key={s.label} className="rounded-xl border border-success/20 bg-card px-3 py-2">
+                <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{s.label}</div>
+                <div className="text-lg font-extrabold">{s.value}</div>
+              </div>
+            ))}
+          </div>
         </div>
+      )}
 
-        <div>
-          <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Observações</label>
-          <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2}
-            placeholder={mode === "open" ? "Ex: Troco inicial" : "Ex: Sangria de R$ 100 às 14h"}
-            className="mt-1 w-full rounded-xl border border-input bg-background px-4 py-2 text-sm outline-none focus:border-primary focus:ring-4 focus:ring-primary/10" />
-        </div>
+      <div className="flex-1 overflow-y-auto p-6">
+        {loading ? (
+          <div className="space-y-3">{[...Array(5)].map((_, i) => <div key={i} className="h-20 rounded-2xl bg-muted animate-pulse" />)}</div>
+        ) : sessions.length === 0 ? (
+          <div className="grid place-items-center py-24 text-center">
+            <Wallet className="h-12 w-12 text-muted-foreground/30 mb-4" />
+            <p className="text-sm text-muted-foreground mb-3">Nenhuma sessão de caixa ainda.</p>
+            <button onClick={() => setOpenModal(true)} className="h-9 rounded-xl gradient-brand px-4 text-sm font-bold text-primary-foreground shadow-brand">Abrir primeiro caixa</button>
+          </div>
+        ) : (
+          <div className="space-y-3 max-w-2xl">
+            <h2 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">Histórico de sessões</h2>
+            <AnimatePresence mode="popLayout">
+              {sessions.map(s => {
+                const isActive = !s.closed_at;
+                const diff = s.closing_amount != null ? s.closing_amount - ((s.opening_amount ?? 0) + (s.orders_total ?? 0)) : null;
+                return (
+                  <motion.div key={s.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                    className={cn("rounded-2xl border bg-card shadow-card overflow-hidden", isActive ? "border-success/30 ring-1 ring-success/20" : "border-border")}>
+                    <div className="flex items-center gap-4 px-5 py-4">
+                      <div className={cn("grid h-10 w-10 shrink-0 place-items-center rounded-xl", isActive ? "bg-success/10 text-success" : "bg-muted text-muted-foreground")}>
+                        {isActive ? <Unlock className="h-5 w-5" /> : <Lock className="h-5 w-5" />}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-semibold text-sm">
+                            {new Date(s.opened_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "2-digit" })}
+                            {" "}
+                            {new Date(s.opened_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                          </span>
+                          {isActive
+                            ? <span className="rounded-full bg-success/10 text-success px-2 py-0.5 text-[10px] font-bold">ABERTO</span>
+                            : <span className="rounded-full bg-muted text-muted-foreground px-2 py-0.5 text-[10px] font-bold">FECHADO</span>}
+                        </div>
+                        <div className="flex items-center gap-3 mt-0.5 text-xs text-muted-foreground flex-wrap">
+                          <span className="flex items-center gap-1"><Receipt className="h-3 w-3" />{s.orders_count ?? 0} pedidos</span>
+                          <span className="flex items-center gap-1"><Clock className="h-3 w-3" />Abertura: {fmt(s.opening_amount)}</span>
+                          {s.notes && <span>• {s.notes}</span>}
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <div className="font-extrabold">{fmt(s.orders_total ?? 0)}</div>
+                        <div className="text-xs text-muted-foreground">vendas</div>
+                        {diff !== null && (
+                          <div className={cn("text-xs font-bold mt-0.5", diff >= 0 ? "text-success" : "text-destructive")}>
+                            {diff >= 0 ? `+${fmt(diff)}` : fmt(diff)}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </div>
+        )}
+      </div>
 
-        <div className="flex justify-end gap-2">
-          <button onClick={onClose} className="rounded-xl border border-border px-4 py-2.5 text-sm font-semibold hover:bg-muted">Cancelar</button>
-          <button onClick={() => void submit()} disabled={saving}
-            className="flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow-brand hover:opacity-90 disabled:opacity-50">
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : (mode === "open" ? <Unlock className="h-4 w-4" /> : <Lock className="h-4 w-4" />)}
-            Confirmar
-          </button>
-        </div>
-      </motion.div>
+      <AnimatePresence>
+        {openModal && restaurant && user && (
+          <OpenModal restaurantId={restaurant.id} userId={user.id} onClose={() => setOpenModal(false)} onOpened={load} />
+        )}
+        {closeModal && (
+          <CloseModal session={closeModal} onClose={() => setCloseModal(null)} onClosed={load} />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
