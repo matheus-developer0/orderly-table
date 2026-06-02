@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bike, MapPin, Phone, Clock, CheckCircle2, Loader2, Package, Plus, X, Check, RefreshCw, User, DollarSign, Printer } from "lucide-react";
+import { Bike, MapPin, Phone, Clock, CheckCircle2, Loader2, Package, Plus, X, Check, RefreshCw, User, DollarSign, Printer, MessageCircle, Copy, Navigation } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -24,6 +24,16 @@ const NEXT:Partial<Record<DS,DS>>={new:"preparing",preparing:"ready",ready:"out_
 const NL:Partial<Record<DS,string>>={new:"Iniciar",preparing:"Pronto",ready:"Despachar 🛵",out_for_delivery:"Entregue ✓"};
 const fmt=(n:number)=>n.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
 function ago(d:string){const s=Math.floor((Date.now()-new Date(d).getTime())/1000);if(s<60)return`${s}s`;if(s<3600)return`${Math.floor(s/60)}min`;return`${Math.floor(s/3600)}h`;}
+const onlyDigits=(s:string|null|undefined)=>(s??"").replace(/\D/g,"");
+function waLink(phone:string|null|undefined,msg:string){
+  const p=onlyDigits(phone);if(!p)return null;
+  const full=p.startsWith("55")?p:`55${p}`;
+  return`https://wa.me/${full}?text=${encodeURIComponent(msg)}`;
+}
+function mapsLink(addr:string|null|undefined){
+  if(!addr)return null;
+  return`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`;
+}
 
 /* ── New Order Modal ── */
 function NewModal({restaurantId,onClose,onSaved}:{restaurantId:string;onClose:()=>void;onSaved:()=>void}){
@@ -113,10 +123,28 @@ function DeliveryCard({order,onAdvance,onPrint}:{order:DeliveryOrder;onAdvance:(
         <div className="flex items-center justify-between pt-1 border-t border-border">
           <span className="font-extrabold text-sm">{fmt(order.total)}</span>
           <div className="flex gap-1">
-            <button onClick={()=>onPrint(order)} className="grid h-7 w-7 place-items-center rounded-lg text-muted-foreground hover:bg-muted transition-colors">
+            {order.delivery_address&&(
+              <a href={mapsLink(order.delivery_address)!} target="_blank" rel="noreferrer" title="Abrir no Maps"
+                 className="grid h-7 w-7 place-items-center rounded-lg text-muted-foreground hover:bg-muted hover:text-blue-600 transition-colors">
+                <Navigation className="h-3.5 w-3.5"/>
+              </a>
+            )}
+            {order.delivery_address&&(
+              <button onClick={()=>{void navigator.clipboard.writeText(order.delivery_address!);toast.success("Endereço copiado");}} title="Copiar endereço"
+                className="grid h-7 w-7 place-items-center rounded-lg text-muted-foreground hover:bg-muted transition-colors">
+                <Copy className="h-3.5 w-3.5"/>
+              </button>
+            )}
+            {order.customer_phone&&(()=>{
+              const url=waLink(order.customer_phone,`Olá ${order.customer_name??""}! Recebemos seu pedido #${order.id.slice(0,8)}. Em breve entraremos em contato 🍔`);
+              return url?<a href={url} target="_blank" rel="noreferrer" title="WhatsApp"
+                className="grid h-7 w-7 place-items-center rounded-lg text-muted-foreground hover:bg-muted hover:text-green-600 transition-colors">
+                <MessageCircle className="h-3.5 w-3.5"/></a>:null;
+            })()}
+            <button onClick={()=>onPrint(order)} title="Imprimir" className="grid h-7 w-7 place-items-center rounded-lg text-muted-foreground hover:bg-muted transition-colors">
               <Printer className="h-3.5 w-3.5"/>
             </button>
-            <button onClick={()=>setOpen(v=>!v)} className="grid h-7 w-7 place-items-center rounded-lg text-muted-foreground hover:bg-muted transition-colors">
+            <button onClick={()=>setOpen(v=>!v)} title="Itens" className="grid h-7 w-7 place-items-center rounded-lg text-muted-foreground hover:bg-muted transition-colors">
               <Package className="h-3.5 w-3.5"/>
             </button>
           </div>
@@ -151,12 +179,62 @@ function DeliveryCard({order,onAdvance,onPrint}:{order:DeliveryOrder;onAdvance:(
   );
 }
 
+/* ── Dispatch Modal (ready → out_for_delivery) ── */
+function DispatchModal({order,onClose,onConfirm}:{order:DeliveryOrder;onClose:()=>void;onConfirm:(eta:number,sendWa:boolean)=>void}){
+  const [eta,setEta]=useState(30);
+  const [sendWa,setSendWa]=useState(true);
+  const hasPhone=!!onlyDigits(order.customer_phone);
+  const preview=`Olá ${order.customer_name??""}! 🛵\n\nSeu pedido #${order.id.slice(0,8)} acaba de sair para entrega!\n⏱️ Previsão: ${eta} min\n💰 Total: ${fmt(order.total)}\n\nObrigado pela preferência!`;
+  return(<>
+    <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} onClick={onClose} className="fixed inset-0 z-30 bg-black/60 backdrop-blur-sm"/>
+    <motion.div initial={{opacity:0,scale:0.96}} animate={{opacity:1,scale:1}} exit={{opacity:0,scale:0.96}}
+      className="fixed left-1/2 top-1/2 z-40 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-card p-6 shadow-2xl space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Despachar pedido</div>
+          <h2 className="text-lg font-extrabold">#{order.id.slice(0,8)} · {order.customer_name??"Cliente"}</h2>
+        </div>
+        <button onClick={onClose} className="rounded-full p-1 hover:bg-muted text-muted-foreground"><X className="h-5 w-5"/></button>
+      </div>
+      <div className="space-y-2">
+        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Tempo estimado de entrega</label>
+        <div className="flex gap-2 flex-wrap">
+          {[15,20,30,45,60].map(m=>(
+            <button key={m} onClick={()=>setEta(m)}
+              className={cn("h-10 px-4 rounded-xl text-sm font-bold border transition-colors",eta===m?"gradient-brand text-primary-foreground border-transparent shadow-brand":"border-border hover:bg-muted")}>
+              {m} min
+            </button>
+          ))}
+        </div>
+      </div>
+      <label className={cn("flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-colors",sendWa&&hasPhone?"border-green-500/40 bg-green-500/5":"border-border",!hasPhone&&"opacity-50 cursor-not-allowed")}>
+        <input type="checkbox" checked={sendWa&&hasPhone} disabled={!hasPhone} onChange={e=>setSendWa(e.target.checked)} className="mt-1 h-4 w-4 accent-green-600"/>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 text-sm font-bold"><MessageCircle className="h-4 w-4 text-green-600"/>Avisar cliente no WhatsApp</div>
+          <p className="text-xs text-muted-foreground mt-0.5">{hasPhone?"Abre o WhatsApp com a mensagem pronta para enviar.":"Cliente sem telefone cadastrado."}</p>
+          {sendWa&&hasPhone&&(
+            <pre className="mt-2 text-[11px] bg-muted/50 rounded-lg p-2 whitespace-pre-wrap font-sans text-foreground">{preview}</pre>
+          )}
+        </div>
+      </label>
+      <div className="flex gap-3">
+        <button onClick={onClose} className="flex-1 h-11 rounded-xl border border-border text-sm font-semibold hover:bg-muted">Cancelar</button>
+        <button onClick={()=>onConfirm(eta,sendWa&&hasPhone)}
+          className="flex-1 h-11 rounded-xl gradient-brand text-sm font-bold text-primary-foreground shadow-brand flex items-center justify-center gap-2">
+          <Bike className="h-4 w-4"/>Despachar
+        </button>
+      </div>
+    </motion.div>
+  </>);
+}
+
 /* ── Main ── */
 function DeliveryPage(){
   const {restaurant}=useAuth();
   const [orders,setOrders]=useState<DeliveryOrder[]>([]);
   const [loading,setLoading]=useState(true);
   const [newModal,setNewModal]=useState(false);
+  const [dispatchOrder,setDispatchOrder]=useState<DeliveryOrder|null>(null);
 
   const load=useCallback(async()=>{
     if(!restaurant)return;
@@ -179,9 +257,36 @@ function DeliveryPage(){
     return()=>{void supabase.removeChannel(ch);};
   },[restaurant,load]);
 
-  const advance=async(id:string,next:DS)=>{
+  const updateStatus=async(id:string,next:DS)=>{
     const{error}=await supabase.from("orders").update({status:next,updated_at:new Date().toISOString()}).eq("id",id);
-    if(error)toast.error("Erro ao atualizar");else{toast.success("Status atualizado!");void load();}
+    if(error){toast.error("Erro ao atualizar");return false;}
+    toast.success("Status atualizado!");void load();return true;
+  };
+
+  const advance=async(id:string,next:DS)=>{
+    const order=orders.find(o=>o.id===id);
+    // Intercept ready → out_for_delivery to open dispatch modal
+    if(order&&next==="out_for_delivery"){setDispatchOrder(order);return;}
+    // Delivered: optionally open WhatsApp thank-you
+    if(order&&next==="delivered"){
+      await updateStatus(id,next);
+      const url=waLink(order.customer_phone,`Olá ${order.customer_name??""}! ✅\n\nSeu pedido #${order.id.slice(0,8)} foi entregue. Esperamos que tenha gostado!\n\nVolte sempre 🍔`);
+      if(url)window.open(url,"_blank");
+      return;
+    }
+    await updateStatus(id,next);
+  };
+
+  const confirmDispatch=async(eta:number,sendWa:boolean)=>{
+    if(!dispatchOrder)return;
+    const order=dispatchOrder;
+    const ok=await updateStatus(order.id,"out_for_delivery");
+    setDispatchOrder(null);
+    if(ok&&sendWa){
+      const msg=`Olá ${order.customer_name??""}! 🛵\n\nSeu pedido #${order.id.slice(0,8)} acaba de sair para entrega!\n⏱️ Previsão: ${eta} min\n💰 Total: ${fmt(order.total)}\n\nObrigado pela preferência!`;
+      const url=waLink(order.customer_phone,msg);
+      if(url)window.open(url,"_blank");
+    }
   };
 
   const printOrder=(order:DeliveryOrder)=>{
@@ -253,6 +358,7 @@ function DeliveryPage(){
 
       <AnimatePresence>
         {newModal&&restaurant&&<NewModal restaurantId={restaurant.id} onClose={()=>setNewModal(false)} onSaved={load}/>}
+        {dispatchOrder&&<DispatchModal order={dispatchOrder} onClose={()=>setDispatchOrder(null)} onConfirm={confirmDispatch}/>}
       </AnimatePresence>
     </div>
   );
