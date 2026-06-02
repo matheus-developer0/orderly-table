@@ -257,9 +257,36 @@ function DeliveryPage(){
     return()=>{void supabase.removeChannel(ch);};
   },[restaurant,load]);
 
-  const advance=async(id:string,next:DS)=>{
+  const updateStatus=async(id:string,next:DS)=>{
     const{error}=await supabase.from("orders").update({status:next,updated_at:new Date().toISOString()}).eq("id",id);
-    if(error)toast.error("Erro ao atualizar");else{toast.success("Status atualizado!");void load();}
+    if(error){toast.error("Erro ao atualizar");return false;}
+    toast.success("Status atualizado!");void load();return true;
+  };
+
+  const advance=async(id:string,next:DS)=>{
+    const order=orders.find(o=>o.id===id);
+    // Intercept ready → out_for_delivery to open dispatch modal
+    if(order&&next==="out_for_delivery"){setDispatchOrder(order);return;}
+    // Delivered: optionally open WhatsApp thank-you
+    if(order&&next==="delivered"){
+      await updateStatus(id,next);
+      const url=waLink(order.customer_phone,`Olá ${order.customer_name??""}! ✅\n\nSeu pedido #${order.id.slice(0,8)} foi entregue. Esperamos que tenha gostado!\n\nVolte sempre 🍔`);
+      if(url)window.open(url,"_blank");
+      return;
+    }
+    await updateStatus(id,next);
+  };
+
+  const confirmDispatch=async(eta:number,sendWa:boolean)=>{
+    if(!dispatchOrder)return;
+    const order=dispatchOrder;
+    const ok=await updateStatus(order.id,"out_for_delivery");
+    setDispatchOrder(null);
+    if(ok&&sendWa){
+      const msg=`Olá ${order.customer_name??""}! 🛵\n\nSeu pedido #${order.id.slice(0,8)} acaba de sair para entrega!\n⏱️ Previsão: ${eta} min\n💰 Total: ${fmt(order.total)}\n\nObrigado pela preferência!`;
+      const url=waLink(order.customer_phone,msg);
+      if(url)window.open(url,"_blank");
+    }
   };
 
   const printOrder=(order:DeliveryOrder)=>{
