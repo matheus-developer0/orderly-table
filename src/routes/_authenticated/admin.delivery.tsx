@@ -234,6 +234,7 @@ function DeliveryPage(){
   const [orders,setOrders]=useState<DeliveryOrder[]>([]);
   const [loading,setLoading]=useState(true);
   const [newModal,setNewModal]=useState(false);
+  const [dispatchOrder,setDispatchOrder]=useState<DeliveryOrder|null>(null);
 
   const load=useCallback(async()=>{
     if(!restaurant)return;
