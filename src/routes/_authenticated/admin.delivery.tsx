@@ -24,6 +24,16 @@ const NEXT:Partial<Record<DS,DS>>={new:"preparing",preparing:"ready",ready:"out_
 const NL:Partial<Record<DS,string>>={new:"Iniciar",preparing:"Pronto",ready:"Despachar 🛵",out_for_delivery:"Entregue ✓"};
 const fmt=(n:number)=>n.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
 function ago(d:string){const s=Math.floor((Date.now()-new Date(d).getTime())/1000);if(s<60)return`${s}s`;if(s<3600)return`${Math.floor(s/60)}min`;return`${Math.floor(s/3600)}h`;}
+const onlyDigits=(s:string|null|undefined)=>(s??"").replace(/\D/g,"");
+function waLink(phone:string|null|undefined,msg:string){
+  const p=onlyDigits(phone);if(!p)return null;
+  const full=p.startsWith("55")?p:`55${p}`;
+  return`https://wa.me/${full}?text=${encodeURIComponent(msg)}`;
+}
+function mapsLink(addr:string|null|undefined){
+  if(!addr)return null;
+  return`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`;
+}
 
 /* ── New Order Modal ── */
 function NewModal({restaurantId,onClose,onSaved}:{restaurantId:string;onClose:()=>void;onSaved:()=>void}){
