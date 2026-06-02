@@ -179,6 +179,55 @@ function DeliveryCard({order,onAdvance,onPrint}:{order:DeliveryOrder;onAdvance:(
   );
 }
 
+/* ── Dispatch Modal (ready → out_for_delivery) ── */
+function DispatchModal({order,onClose,onConfirm}:{order:DeliveryOrder;onClose:()=>void;onConfirm:(eta:number,sendWa:boolean)=>void}){
+  const [eta,setEta]=useState(30);
+  const [sendWa,setSendWa]=useState(true);
+  const hasPhone=!!onlyDigits(order.customer_phone);
+  const preview=`Olá ${order.customer_name??""}! 🛵\n\nSeu pedido #${order.id.slice(0,8)} acaba de sair para entrega!\n⏱️ Previsão: ${eta} min\n💰 Total: ${fmt(order.total)}\n\nObrigado pela preferência!`;
+  return(<>
+    <motion.div initial={{opacity:0}} animate={{opacity:1}} exit={{opacity:0}} onClick={onClose} className="fixed inset-0 z-30 bg-black/60 backdrop-blur-sm"/>
+    <motion.div initial={{opacity:0,scale:0.96}} animate={{opacity:1,scale:1}} exit={{opacity:0,scale:0.96}}
+      className="fixed left-1/2 top-1/2 z-40 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-card p-6 shadow-2xl space-y-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Despachar pedido</div>
+          <h2 className="text-lg font-extrabold">#{order.id.slice(0,8)} · {order.customer_name??"Cliente"}</h2>
+        </div>
+        <button onClick={onClose} className="rounded-full p-1 hover:bg-muted text-muted-foreground"><X className="h-5 w-5"/></button>
+      </div>
+      <div className="space-y-2">
+        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Tempo estimado de entrega</label>
+        <div className="flex gap-2 flex-wrap">
+          {[15,20,30,45,60].map(m=>(
+            <button key={m} onClick={()=>setEta(m)}
+              className={cn("h-10 px-4 rounded-xl text-sm font-bold border transition-colors",eta===m?"gradient-brand text-primary-foreground border-transparent shadow-brand":"border-border hover:bg-muted")}>
+              {m} min
+            </button>
+          ))}
+        </div>
+      </div>
+      <label className={cn("flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-colors",sendWa&&hasPhone?"border-green-500/40 bg-green-500/5":"border-border",!hasPhone&&"opacity-50 cursor-not-allowed")}>
+        <input type="checkbox" checked={sendWa&&hasPhone} disabled={!hasPhone} onChange={e=>setSendWa(e.target.checked)} className="mt-1 h-4 w-4 accent-green-600"/>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-1.5 text-sm font-bold"><MessageCircle className="h-4 w-4 text-green-600"/>Avisar cliente no WhatsApp</div>
+          <p className="text-xs text-muted-foreground mt-0.5">{hasPhone?"Abre o WhatsApp com a mensagem pronta para enviar.":"Cliente sem telefone cadastrado."}</p>
+          {sendWa&&hasPhone&&(
+            <pre className="mt-2 text-[11px] bg-muted/50 rounded-lg p-2 whitespace-pre-wrap font-sans text-foreground">{preview}</pre>
+          )}
+        </div>
+      </label>
+      <div className="flex gap-3">
+        <button onClick={onClose} className="flex-1 h-11 rounded-xl border border-border text-sm font-semibold hover:bg-muted">Cancelar</button>
+        <button onClick={()=>onConfirm(eta,sendWa&&hasPhone)}
+          className="flex-1 h-11 rounded-xl gradient-brand text-sm font-bold text-primary-foreground shadow-brand flex items-center justify-center gap-2">
+          <Bike className="h-4 w-4"/>Despachar
+        </button>
+      </div>
+    </motion.div>
+  </>);
+}
+
 /* ── Main ── */
 function DeliveryPage(){
   const {restaurant}=useAuth();
