@@ -123,10 +123,28 @@ function DeliveryCard({order,onAdvance,onPrint}:{order:DeliveryOrder;onAdvance:(
         <div className="flex items-center justify-between pt-1 border-t border-border">
           <span className="font-extrabold text-sm">{fmt(order.total)}</span>
           <div className="flex gap-1">
-            <button onClick={()=>onPrint(order)} className="grid h-7 w-7 place-items-center rounded-lg text-muted-foreground hover:bg-muted transition-colors">
+            {order.delivery_address&&(
+              <a href={mapsLink(order.delivery_address)!} target="_blank" rel="noreferrer" title="Abrir no Maps"
+                 className="grid h-7 w-7 place-items-center rounded-lg text-muted-foreground hover:bg-muted hover:text-blue-600 transition-colors">
+                <Navigation className="h-3.5 w-3.5"/>
+              </a>
+            )}
+            {order.delivery_address&&(
+              <button onClick={()=>{void navigator.clipboard.writeText(order.delivery_address!);toast.success("Endereço copiado");}} title="Copiar endereço"
+                className="grid h-7 w-7 place-items-center rounded-lg text-muted-foreground hover:bg-muted transition-colors">
+                <Copy className="h-3.5 w-3.5"/>
+              </button>
+            )}
+            {order.customer_phone&&(()=>{
+              const url=waLink(order.customer_phone,`Olá ${order.customer_name??""}! Recebemos seu pedido #${order.id.slice(0,8)}. Em breve entraremos em contato 🍔`);
+              return url?<a href={url} target="_blank" rel="noreferrer" title="WhatsApp"
+                className="grid h-7 w-7 place-items-center rounded-lg text-muted-foreground hover:bg-muted hover:text-green-600 transition-colors">
+                <MessageCircle className="h-3.5 w-3.5"/></a>:null;
+            })()}
+            <button onClick={()=>onPrint(order)} title="Imprimir" className="grid h-7 w-7 place-items-center rounded-lg text-muted-foreground hover:bg-muted transition-colors">
               <Printer className="h-3.5 w-3.5"/>
             </button>
-            <button onClick={()=>setOpen(v=>!v)} className="grid h-7 w-7 place-items-center rounded-lg text-muted-foreground hover:bg-muted transition-colors">
+            <button onClick={()=>setOpen(v=>!v)} title="Itens" className="grid h-7 w-7 place-items-center rounded-lg text-muted-foreground hover:bg-muted transition-colors">
               <Package className="h-3.5 w-3.5"/>
             </button>
           </div>
