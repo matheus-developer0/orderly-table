@@ -165,8 +165,7 @@ function CozinhaPage(){
 
   const move=async(id:string,status:OS,reason?:string)=>{
     setMoving(id);
-    const patch:Record<string,unknown>={status,updated_at:new Date().toISOString()};
-    if(reason)patch.cancel_reason=reason;
+    const patch={status,updated_at:new Date().toISOString(),...(reason?{cancel_reason:reason}:{})};
     const{error}=await supabase.from("orders").update(patch).eq("id",id);
     setMoving(null);
     if(error)return toast.error(error.message);
