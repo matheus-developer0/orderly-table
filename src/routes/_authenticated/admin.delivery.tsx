@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bike, MapPin, Phone, Clock, CheckCircle2, Loader2, Package, Plus, X, Check, RefreshCw, User, DollarSign, Printer } from "lucide-react";
+import { Bike, MapPin, Phone, Clock, CheckCircle2, Loader2, Package, Plus, X, Check, RefreshCw, User, DollarSign, Printer, MessageCircle, Copy, Navigation } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
