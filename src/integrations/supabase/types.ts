@@ -188,6 +188,9 @@ export type Database = {
         Row: {
           cancel_reason: string | null
           created_at: string
+          customer_name: string | null
+          customer_phone: string | null
+          delivery_address: string | null
           id: string
           notes: string | null
           printed: boolean
@@ -201,6 +204,9 @@ export type Database = {
         Insert: {
           cancel_reason?: string | null
           created_at?: string
+          customer_name?: string | null
+          customer_phone?: string | null
+          delivery_address?: string | null
           id?: string
           notes?: string | null
           printed?: boolean
@@ -214,6 +220,9 @@ export type Database = {
         Update: {
           cancel_reason?: string | null
           created_at?: string
+          customer_name?: string | null
+          customer_phone?: string | null
+          delivery_address?: string | null
           id?: string
           notes?: string | null
           printed?: boolean
