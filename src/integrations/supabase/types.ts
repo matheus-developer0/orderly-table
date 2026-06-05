@@ -83,6 +83,13 @@ export type Database = {
             referencedRelation: "restaurants"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "categories_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       notifications: {
@@ -119,6 +126,13 @@ export type Database = {
             columns: ["restaurant_id"]
             isOneToOne: false
             referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants_public"
             referencedColumns: ["id"]
           },
         ]
@@ -242,6 +256,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "orders_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "orders_table_id_fkey"
             columns: ["table_id"]
             isOneToOne: false
@@ -311,6 +332,13 @@ export type Database = {
             referencedRelation: "restaurants"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "products_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       profiles: {
@@ -341,6 +369,13 @@ export type Database = {
             columns: ["restaurant_id"]
             isOneToOne: false
             referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants_public"
             referencedColumns: ["id"]
           },
         ]
@@ -503,6 +538,13 @@ export type Database = {
             referencedRelation: "restaurants"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "tables_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants_public"
+            referencedColumns: ["id"]
+          },
         ]
       }
       user_roles: {
@@ -533,6 +575,13 @@ export type Database = {
             columns: ["restaurant_id"]
             isOneToOne: false
             referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_roles_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants_public"
             referencedColumns: ["id"]
           },
         ]
@@ -571,6 +620,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "waiter_calls_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants_public"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "waiter_calls_table_id_fkey"
             columns: ["table_id"]
             isOneToOne: false
@@ -581,7 +637,36 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      restaurants_public: {
+        Row: {
+          accent_color: string | null
+          address: string | null
+          id: string | null
+          logo_url: string | null
+          name: string | null
+          primary_color: string | null
+          slug: string | null
+        }
+        Insert: {
+          accent_color?: string | null
+          address?: string | null
+          id?: string | null
+          logo_url?: string | null
+          name?: string | null
+          primary_color?: string | null
+          slug?: string | null
+        }
+        Update: {
+          accent_color?: string | null
+          address?: string | null
+          id?: string | null
+          logo_url?: string | null
+          name?: string | null
+          primary_color?: string | null
+          slug?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       current_restaurant_id: { Args: { _user_id: string }; Returns: string }
