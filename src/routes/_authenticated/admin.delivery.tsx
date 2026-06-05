@@ -229,17 +229,6 @@ function DeliveryPage(){
     await updateStatus(id,next);
   };
 
-  const confirmDispatch=async(eta:number,sendWa:boolean)=>{
-    if(!dispatchOrder)return;
-    const order=dispatchOrder;
-    const ok=await updateStatus(order.id,"out_for_delivery");
-    setDispatchOrder(null);
-    if(ok&&sendWa){
-      const msg=`Olá ${order.customer_name??""}! 🛵\n\nSeu pedido #${order.id.slice(0,8)} acaba de sair para entrega!\n⏱️ Previsão: ${eta} min\n💰 Total: ${fmt(order.total)}\n\nObrigado pela preferência!`;
-      const url=waLink(order.customer_phone,msg);
-      if(url)window.open(url,"_blank");
-    }
-  };
 
   const printOrder=(order:DeliveryOrder)=>{
     const w=window.open("","_blank");if(!w)return;
