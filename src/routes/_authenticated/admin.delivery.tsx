@@ -221,9 +221,9 @@ function DeliveryPage(){
     if(order&&next==="out_for_delivery"){
       const ok=await updateStatus(id,next);
       if(ok){
-        const msg=`Olá ${order.customer_name??""}! 🛵\n\nSeu pedido #${order.id.slice(0,8)} acaba de sair para entrega!\n⏱️ Previsão: 30 min\n💰 Total: ${fmt(order.total)}\n\nObrigado pela preferência!`;
-        const url=waLink(order.customer_phone,msg);
-        if(url)window.open(url,"_blank");
+        const url=waLink(order.customer_phone,`Olá ${order.customer_name??""}! 🛵\n\nSeu pedido #${order.id.slice(0,8)} acaba de sair para entrega!\n⏱️ Previsão: 30 min\n💰 Total: ${fmt(order.total)}\n\nObrigado pela preferência!`);
+        if(url){window.open(url,"_blank");toast.success(`WhatsApp aberto para ${order.customer_name??"cliente"}`);}
+        else{toast.info("Cliente sem telefone — status atualizado.");}
       }
       return;
     }
@@ -232,7 +232,8 @@ function DeliveryPage(){
       const ok=await updateStatus(id,next);
       if(ok){
         const url=waLink(order.customer_phone,`Olá ${order.customer_name??""}! ✅\n\nSeu pedido #${order.id.slice(0,8)} foi entregue. Esperamos que tenha gostado!\n\nVolte sempre 🍔`);
-        if(url)window.open(url,"_blank");
+        if(url){window.open(url,"_blank");toast.success(`WhatsApp de agradecimento aberto para ${order.customer_name??"cliente"}`);}
+        else{toast.info("Cliente sem telefone — entrega confirmada.");}
       }
       return;
     }
