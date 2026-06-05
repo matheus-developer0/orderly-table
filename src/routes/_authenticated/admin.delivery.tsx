@@ -298,8 +298,7 @@ function DeliveryPage(){
       </div>
 
       <AnimatePresence>
-        {newModal&&restaurant&&<NewModal restaurantId={restaurant.id} onClose={()=>setNewModal(false)} onSaved={load}/>}
-        {dispatchOrder&&<DispatchModal order={dispatchOrder} onClose={()=>setDispatchOrder(null)} onConfirm={confirmDispatch}/>}
+      {newModal&&restaurant&&<NewModal restaurantId={restaurant.id} onClose={()=>setNewModal(false)} onSaved={load}/>}
       </AnimatePresence>
     </div>
   );
